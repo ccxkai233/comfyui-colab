@@ -19,6 +19,9 @@ import urllib.request
 from pathlib import Path
 
 
+UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+
+
 def resolve_civitai_url(url: str, token: str = "") -> tuple[str, str | None]:
     """将 Civitai 页面链接或下载链接规范化为实际下载地址，并尝试提取文件名。"""
     parsed = urllib.parse.urlparse(url)
@@ -50,7 +53,7 @@ def resolve_civitai_url(url: str, token: str = "") -> tuple[str, str | None]:
     wanted_vid = qs.get("modelVersionId", [None])[0]
 
     api_url = f"https://{api_host}/api/v1/models/{model_id}"
-    req = urllib.request.Request(api_url, headers={"User-Agent": "comfyui-colab/1.0"})
+    req = urllib.request.Request(api_url, headers={"User-Agent": UA})
     if token:
         req.add_header("Authorization", f"Bearer {token}")
 
@@ -103,25 +106,9 @@ def download_file(url: str, target_dir: Path, filename: str | None = None, civit
     if hf_token and "huggingface.co" in resolved_url:
         headers.append(f"Authorization: Bearer {hf_token}")
 
-    if shutil.which("aria2c"):
-        cmd = [
-            "aria2c",
-            "--console-log-level=warn",
-            "-c",
-            "-x", "8",
-            "-s", "8",
-            "-k", "1M",
-            "--auto-file-renaming=false",
-            "--content-disposition-default-utf8=true",
-            "-d", str(target_dir),
-        ]
-        for h in headers:
-            cmd += ["--header", h]
-        if out_name:
-            cmd += ["-o", out_name]
-        cmd.append(resolved_url)
-    else:
-        cmd = ["curl", "-L", "--fail", "--retry", "3", "-C", "-"]
+    is_civitai = "civitai." in urllib.parse.urlparse(resolved_url).netloc.lower()
+    if is_civitai or not shutil.which("aria2c"):
+        cmd = ["curl", "-fL", "--retry", "3", "-C", "-", "-A", UA]
         for h in headers:
             cmd += ["-H", h]
         if out_name:
@@ -129,9 +116,38 @@ def download_file(url: str, target_dir: Path, filename: str | None = None, civit
         else:
             cmd += ["-J", "-O", "--output-dir", str(target_dir)]
         cmd.append(resolved_url)
+        print(f"[Download via curl] -> {target_dir / (out_name or '(auto)')}")
+        subprocess.run(cmd, check=True)
+        return target_dir / (out_name or "")
 
-    print(f"[Download] -> {target_dir / (out_name or '(auto)')}")
-    subprocess.run(cmd, check=True)
+    cmd = [
+        "aria2c",
+        "--console-log-level=warn",
+        "-c",
+        "-x", "8",
+        "-s", "8",
+        "-k", "1M",
+        "-U", UA,
+        "--auto-file-renaming=false",
+        "--content-disposition-default-utf8=true",
+        "-d", str(target_dir),
+    ]
+    for h in headers:
+        cmd += ["--header", h]
+    if out_name:
+        cmd += ["-o", out_name]
+    cmd.append(resolved_url)
+
+    print(f"[Download via aria2c] -> {target_dir / (out_name or '(auto)')}")
+    res = subprocess.run(cmd)
+    if res.returncode != 0:
+        print("[Warn] aria2c 下载失败，自动回退到 curl...")
+        curl_cmd = ["curl", "-fL", "--retry", "3", "-C", "-", "-A", UA]
+        for h in headers:
+            curl_cmd += ["-H", h]
+        curl_cmd += ["-o", str(target_dir / out_name)] if out_name else ["-J", "-O", "--output-dir", str(target_dir)]
+        curl_cmd.append(resolved_url)
+        subprocess.run(curl_cmd, check=True)
     return target_dir / (out_name or "")
 
 
