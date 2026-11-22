@@ -1,5 +1,7 @@
 # ComfyUI Colab 多底模 + LoRA 生图工具包
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ccxkai233/comfyui-colab/blob/main/ComfyUI_Colab.ipynb)
+
 面向 Google Colab（兼容免费 **T4 16GB** 与付费 **L4 24GB / A100**）的 ComfyUI 网页版一键启动脚本、模型下载工具与常用工作流模板。
 
 ## 目录结构
@@ -15,16 +17,15 @@ comfyui-colab/
     └── sd15_lora.json                    # SD 1.5 + LoRA 工作流（含 Clip Skip 2）
 ```
 
-## 快速开始（上传到 GitHub 后在 Colab 打开）
+## 快速开始（一键在 Colab 打开）
 
-1. 将本仓库推送到你的 GitHub 仓库（假设地址为 `https://github.com/<你的用户名>/<仓库名>`）。
-2. 在浏览器直接访问以下地址即可在 Google Colab 中打开 Notebook：
+1. 点击上方 **Open In Colab** 徽章，或直接访问：
    ```text
-   https://colab.research.google.com/github/<你的用户名>/<仓库名>/blob/main/ComfyUI_Colab.ipynb
+   https://colab.research.google.com/github/ccxkai233/comfyui-colab/blob/main/ComfyUI_Colab.ipynb
    ```
-3. 在 Colab 菜单栏切换 GPU：**代码执行程序 → 更改运行时类型 → T4 或 L4 GPU**。
-4. 按顺序运行第 1–5 步单元格（在第 2 步的 `REPO_URL` 中填入你的 GitHub 仓库地址，即可自动把 `workflows/` 导入 ComfyUI 网页版）。
-5. 等待第 5 步打印出 `https://xxxx.trycloudflare.com` 后，点击进入 ComfyUI 网页版。
+2. 在 Colab 菜单栏切换 GPU：**代码执行程序 → 更改运行时类型 → T4 或 L4 GPU**。
+3. 按顺序运行第 1–5 步单元格（第 2 步已默认配置本仓库地址，会自动将 `workflows/` 导入 ComfyUI 网页版）。
+4. 等待第 5 步打印出 `https://xxxx.trycloudflare.com` 后，点击进入 ComfyUI 网页版。
 
 ## 显卡与底模预置选择
 
