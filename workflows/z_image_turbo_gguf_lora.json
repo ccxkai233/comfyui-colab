@@ -1,0 +1,218 @@
+{
+  "id": "b1a7c001-0001-4000-8000-000000000001",
+  "revision": 0,
+  "last_node_id": 12,
+  "last_link_id": 12,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "UnetLoaderGGUF",
+      "pos": [40, 120],
+      "size": [300, 58],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "name": "MODEL", "type": "MODEL", "links": [1] }
+      ],
+      "title": "Load Z-Image-Turbo (GGUF)",
+      "properties": { "Node name for S&R": "UnetLoaderGGUF" },
+      "widgets_values": ["z_image_turbo-Q4_K_M.gguf"]
+    },
+    {
+      "id": 2,
+      "type": "LoraLoaderModelOnly",
+      "pos": [380, 120],
+      "size": [300, 82],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        { "name": "model", "type": "MODEL", "link": 1 }
+      ],
+      "outputs": [
+        { "name": "MODEL", "type": "MODEL", "links": [2] }
+      ],
+      "title": "Load LoRA (可选：不需要时右键 Bypass)",
+      "properties": { "Node name for S&R": "LoraLoaderModelOnly" },
+      "widgets_values": ["20260221-094232.safetensors", 1.0]
+    },
+    {
+      "id": 3,
+      "type": "ModelSamplingAuraFlow",
+      "pos": [720, 120],
+      "size": [280, 58],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        { "name": "model", "type": "MODEL", "link": 2 }
+      ],
+      "outputs": [
+        { "name": "MODEL", "type": "MODEL", "links": [3] }
+      ],
+      "properties": { "Node name for S&R": "ModelSamplingAuraFlow" },
+      "widgets_values": [3]
+    },
+    {
+      "id": 4,
+      "type": "CLIPLoaderGGUF",
+      "pos": [40, 260],
+      "size": [300, 82],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "name": "CLIP", "type": "CLIP", "links": [4, 5] }
+      ],
+      "title": "Load Qwen3-4B (GGUF)",
+      "properties": { "Node name for S&R": "CLIPLoaderGGUF" },
+      "widgets_values": ["Qwen3-4B-Q4_K_M.gguf", "lumina2"]
+    },
+    {
+      "id": 5,
+      "type": "CLIPTextEncode",
+      "pos": [380, 250],
+      "size": [420, 180],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        { "name": "clip", "type": "CLIP", "link": 4 }
+      ],
+      "outputs": [
+        { "name": "CONDITIONING", "type": "CONDITIONING", "links": [6] }
+      ],
+      "title": "Positive Prompt (自然语言 + 触发词)",
+      "properties": { "Node name for S&R": "CLIPTextEncode" },
+      "widgets_values": [
+        "NSFHSSP, A graceful East Asian woman with long jet-black hair tied in a low side ponytail with a pale yellow silk flower, wearing a cream lace-embroidered hanfu dress, holding an oil-paper umbrella in a sunlit wooden room with bamboo blinds, soft natural lighting, photorealistic, high detail."
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 6,
+      "type": "CLIPTextEncode",
+      "pos": [380, 470],
+      "size": [420, 120],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        { "name": "clip", "type": "CLIP", "link": 5 }
+      ],
+      "outputs": [
+        { "name": "CONDITIONING", "type": "CONDITIONING", "links": [7] }
+      ],
+      "title": "Negative Prompt (CFG=1 时可留空)",
+      "properties": { "Node name for S&R": "CLIPTextEncode" },
+      "widgets_values": [""],
+      "color": "#322",
+      "bgcolor": "#533"
+    },
+    {
+      "id": 7,
+      "type": "EmptySD3LatentImage",
+      "pos": [40, 400],
+      "size": [300, 106],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "name": "LATENT", "type": "LATENT", "links": [8] }
+      ],
+      "title": "Resolution (T4 推荐 768x1344 或 1024x1024)",
+      "properties": { "Node name for S&R": "EmptySD3LatentImage" },
+      "widgets_values": [768, 1344, 1]
+    },
+    {
+      "id": 8,
+      "type": "KSampler",
+      "pos": [860, 250],
+      "size": [315, 262],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        { "name": "model", "type": "MODEL", "link": 3 },
+        { "name": "positive", "type": "CONDITIONING", "link": 6 },
+        { "name": "negative", "type": "CONDITIONING", "link": 7 },
+        { "name": "latent_image", "type": "LATENT", "link": 8 }
+      ],
+      "outputs": [
+        { "name": "LATENT", "type": "LATENT", "links": [9] }
+      ],
+      "properties": { "Node name for S&R": "KSampler" },
+      "widgets_values": [42, "randomize", 8, 1, "euler", "simple", 1]
+    },
+    {
+      "id": 9,
+      "type": "VAELoader",
+      "pos": [860, 560],
+      "size": [315, 58],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "name": "VAE", "type": "VAE", "links": [10] }
+      ],
+      "properties": { "Node name for S&R": "VAELoader" },
+      "widgets_values": ["ae.safetensors"]
+    },
+    {
+      "id": 10,
+      "type": "VAEDecode",
+      "pos": [1220, 250],
+      "size": [210, 46],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        { "name": "samples", "type": "LATENT", "link": 9 },
+        { "name": "vae", "type": "VAE", "link": 10 }
+      ],
+      "outputs": [
+        { "name": "IMAGE", "type": "IMAGE", "links": [11] }
+      ],
+      "properties": { "Node name for S&R": "VAEDecode" },
+      "widgets_values": []
+    },
+    {
+      "id": 11,
+      "type": "SaveImage",
+      "pos": [1470, 250],
+      "size": [320, 320],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        { "name": "images", "type": "IMAGE", "link": 11 }
+      ],
+      "outputs": [],
+      "properties": { "Node name for S&R": "SaveImage" },
+      "widgets_values": ["ZImageTurbo_GGUF"]
+    }
+  ],
+  "links": [
+    [1, 1, 0, 2, 0, "MODEL"],
+    [2, 2, 0, 3, 0, "MODEL"],
+    [3, 3, 0, 8, 0, "MODEL"],
+    [4, 4, 0, 5, 0, "CLIP"],
+    [5, 4, 0, 6, 0, "CLIP"],
+    [6, 5, 0, 8, 1, "CONDITIONING"],
+    [7, 6, 0, 8, 2, "CONDITIONING"],
+    [8, 7, 0, 8, 3, "LATENT"],
+    [9, 8, 0, 10, 0, "LATENT"],
+    [10, 9, 0, 10, 1, "VAE"],
+    [11, 10, 0, 11, 0, "IMAGE"]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {},
+  "version": 0.4
+}

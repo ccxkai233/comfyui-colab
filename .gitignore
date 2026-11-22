@@ -1,0 +1,27 @@
+# Ignore model weights and generated images
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.gguf
+*.onnx
+*.png
+*.jpg
+*.jpeg
+*.webp
+
+# Python / Jupyter
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Secrets / local env
+.env
+*.token
+
+# OS
+.DS_Store
+Thumbs.db
